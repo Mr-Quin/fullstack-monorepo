@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+    mysql:
+        hostname: mysql
+        container_name: mysql
+        image: mysql:8.0
+        networks:
+            - app
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+        # port exposed for local development
+        #        ports:
+        #            - '3307:3306'
+        restart: unless-stopped
+
+    app:
+        hostname: app
+        container_name: app
+        # build the image from the Dockerfile
+        image: b:1
+        networks:
+            - app
+        environment:
+            #            APP_API_KEY: ${APP_API_KEY}
+            APP_MYSQL_HOST: ${APP_MYSQL_HOST}
+            APP_MYSQL_PORT: ${APP_MYSQL_PORT}
+            APP_MYSQL_USER: ${APP_MYSQL_USER}
+            APP_MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            APP_MYSQL_DATABASE: ${MYSQL_DATABASE}
+        ports:
+            - '4000:3000'
+        depends_on:
+            - mysql
+
+networks:
+    app:
+        name: app

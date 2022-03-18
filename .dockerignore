@@ -1,0 +1,11 @@
+**/Dockerfile
+**/README.md
+**/node_modules
+**/deploy
+**/.git*
+**/.prettier*
+**/.idea
+**/.env
+**/build
+**/dist
+**/*.tsbuildinfo

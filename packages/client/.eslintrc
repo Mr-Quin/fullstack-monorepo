@@ -1,0 +1,14 @@
+{
+    "extends": ["../../.eslintrc", "react-app", "react-app/jest"],
+    "ignorePatterns": ["dist/**", "build/**", "node_modules/**", "public/**"],
+    "rules": {
+        "no-empty-function": "off",
+        "react/jsx-curly-brace-presence": [
+            "warn",
+            {
+                "props": "always",
+                "children": "ignore"
+            }
+        ]
+    }
+}

@@ -1,0 +1,54 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "sourceType": "module",
+        "project": ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"]
+    },
+    "plugins": ["@typescript-eslint", "unicorn", "import"],
+    "ignorePatterns": [
+        "dist/**",
+        "build/**",
+        "node_modules/**",
+        "coverage/**",
+        "public/**",
+        "deploy/**",
+        ".github/**"
+    ],
+    "overrides": [],
+    "settings": {
+        "import/parsers": {
+            "@typescript-eslint/parser": [".ts"]
+        },
+        "import/resolver": {
+            "typescript": {
+                "alwaysTryTypes": true
+            }
+        }
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
+    ],
+    "rules": {
+        "unicorn/prefer-node-protocol": "error",
+        "unicorn/prefer-module": "error",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/ban-types": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "variable",
+                "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"]
+            }
+        ],
+        "@typescript-eslint/no-inferrable-types": "off"
+    }
+}
