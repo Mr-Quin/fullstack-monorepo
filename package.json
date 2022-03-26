@@ -1,7 +1,7 @@
 {
-    "name": "cs340-team-project",
-    "version": "1.0.0",
-    "description": "monorepo",
+    "name": "nest-react-postgres",
+    "version": "1.1.0",
+    "description": "monorepo project",
     "type": "commonjs",
     "workspaces": [
         "packages/server",
@@ -21,7 +21,8 @@
     "author": "",
     "license": "",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=16.0.0",
+        "npm": ">=8.0.0"
     },
     "dependencies": {
         "async": "^3.2.3",
