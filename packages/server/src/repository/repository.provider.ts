@@ -1,11 +1,6 @@
-import { Connection } from 'mysql2'
 import { Pool, QueryResult } from 'pg'
 import { ConfigService } from '@nestjs/config'
 import { Injectable } from '@nestjs/common'
-
-export type MySql = Connection
-
-export const MYSQL = Symbol('MYSQL')
 
 @Injectable()
 export class DbService {

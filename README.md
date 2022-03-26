@@ -2,7 +2,7 @@
 
 ## Requirements
 
-This project requires Node 16 or above, npm, and a SQL database. The project was developed using MySQL 8.0.
+This project requires Node 16 or above, npm, and PostgresSQL database. The project was developed using PostgresSql 14.2.
 
 ## Setting up
 

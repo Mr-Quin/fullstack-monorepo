@@ -10,7 +10,7 @@ import { ApiKeyService } from './common/api-key.service'
 import { SqlExceptionFilter } from './common/filters/sql-exception.filter'
 import { AuthenticationGuard } from './common/guards/AuthenticationGuard'
 import { InvoicesModule } from './invoices/invoices.module'
-import { MySqlModule } from './repository/repository.module'
+import { DbModule } from './repository/repository.module'
 import { UsersModule } from './users/users.module'
 import { VideosModule } from './videos/videos.module'
 import { WsModule } from './ws/ws.module'
@@ -26,7 +26,7 @@ import { WsModule } from './ws/ws.module'
         VideosModule,
         BanksModule,
         InvoicesModule,
-        MySqlModule,
+        DbModule,
         WsModule,
     ],
     controllers: [AppController],

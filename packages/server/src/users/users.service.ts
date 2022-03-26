@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { DbService, MYSQL, MySql } from '../repository/repository.provider'
+import { Injectable } from '@nestjs/common'
+import { DbService } from '../repository/repository.provider'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserDetailEntity } from './entities/user-detail.entity'
@@ -7,10 +7,7 @@ import { UserEntity } from './entities/user.entity'
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @Inject(MYSQL) private readonly mysql: MySql,
-        private readonly dbService: DbService
-    ) {}
+    constructor(private readonly dbService: DbService) {}
 
     async create(createUserDto: CreateUserDto) {
         const { rows } = await this.dbService.pool.query(
