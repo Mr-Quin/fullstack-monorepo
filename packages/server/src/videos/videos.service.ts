@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { mapSeries } from 'async'
 import { DbService } from '../repository/repository.provider'
 import { CreateVideoDto } from './dto/create-video.dto'
@@ -185,6 +185,11 @@ export class VideosService {
             `,
             [id]
         )
+
+        // TODO: handle this at the controller level
+        if (rows.length === 0) {
+            throw new NotFoundException(`Video with id ${id} not found`)
+        }
 
         return rows[0].user_ids
     }
