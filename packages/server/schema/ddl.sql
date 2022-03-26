@@ -8,11 +8,11 @@ create table if not exists Users
 create table if not exists Videos
 (
     video_id    serial primary key,
-    title       varchar(255)                  not null,
+    title       varchar(255)                   not null,
     description text,
-    duration    int check (duration > 0)      not null,
-    view_count  bigint check (view_count > 0) not null default 0,
-    created_at  timestamp(0) with time zone            default current_timestamp
+    duration    int check (duration > 0)       not null,
+    view_count  bigint check (view_count >= 0) not null default 0,
+    created_at  timestamp(0) with time zone             default current_timestamp
 );
 
 create table if not exists Banks
