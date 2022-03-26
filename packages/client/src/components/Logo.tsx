@@ -1,4 +1,4 @@
-import { styled } from '@mui/material'
+import { styled, Tooltip } from '@mui/material'
 
 const GradientLogo = styled('div')(({ theme }) => ({
     fontSize: theme.typography.h5.fontSize,
@@ -16,7 +16,11 @@ const GradientLogo = styled('div')(({ theme }) => ({
 }))
 
 const Logo = () => {
-    return <GradientLogo>Group 1</GradientLogo>
+    return (
+        <Tooltip title={'They said there needs to be a logo'}>
+            <GradientLogo>FS</GradientLogo>
+        </Tooltip>
+    )
 }
 
 export default Logo
