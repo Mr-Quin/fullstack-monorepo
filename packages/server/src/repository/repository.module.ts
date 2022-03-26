@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common'
 import { mysqlDb } from './mysql'
-import { MYSQL } from './repository.provider'
+import { DbService, MYSQL } from './repository.provider'
 
 @Global()
 @Module({
@@ -9,7 +9,8 @@ import { MYSQL } from './repository.provider'
             provide: MYSQL,
             useValue: mysqlDb,
         },
+        DbService,
     ],
-    exports: [MYSQL],
+    exports: [MYSQL, DbService],
 })
 export class MySqlModule {}
