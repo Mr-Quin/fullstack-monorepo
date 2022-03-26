@@ -1,7 +1,7 @@
 # Pass some key in from the command line
 ARG APP_KEY=48ebbecf3c8c436791985994d9ba7c73
 # ================================ base ================================
-FROM node:16 AS build
+FROM node:16-alpine AS build
 
 WORKDIR /build
 
