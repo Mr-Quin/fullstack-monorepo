@@ -40,7 +40,6 @@ export const createInvoice = async (data: CreateInvoiceDto) => {
 }
 
 export const updateInvoice = async (id: NumberOrString, data: UpdateInvoiceDto) => {
-    console.log(data)
     const res = await fetchApi(`/invoices/${id}`, {
         method: 'PATCH',
         headers: {

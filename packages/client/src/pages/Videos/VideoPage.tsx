@@ -40,7 +40,6 @@ const columns: GridColDef[] = [
         description: 'User IDs of the author of this video',
         width: 120,
         renderCell: (rowData) => {
-            console.log(rowData)
             return (
                 <Stack direction={'row'} spacing={1}>
                     {rowData.value.map((user, i) => {

@@ -1,4 +1,4 @@
-import AdapterLuxon from '@mui/lab/AdapterLuxon'
+import AdapterDateFns from '@mui/lab/AdapterDateFns'
 import LocalizationProvider from '@mui/lab/LocalizationProvider'
 import { Container } from '@mui/material'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
@@ -22,7 +22,7 @@ const App = () => {
             <GlobalSnackbar />
             <HeaderBar />
             <Instruction />
-            <LocalizationProvider dateAdapter={AdapterLuxon}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Container sx={{ pt: 4, pb: 4, flexGrow: 1 }} component={'main'} maxWidth={'xl'}>
                     <Routes>
                         <Route path={'/'} element={<Navigate replace to={'/users'} />} />

@@ -14,7 +14,7 @@ const invoiceFormInitState = {
     user_video_id: null as number | null,
     bank_id: null as number | null,
     tier: '0',
-    paid_at: null as Date | null,
+    paid_at: null as string | null,
 }
 
 type InvoiceFormState = typeof invoiceFormInitState
@@ -24,7 +24,7 @@ type InvoiceFormAction =
     | { type: 'vid'; payload: number | null }
     | { type: 'bankId'; payload: number | null }
     | { type: 'tier'; payload: string }
-    | { type: 'paidAt'; payload: Date | null }
+    | { type: 'paidAt'; payload: string | null }
     | { type: 'reset' }
 
 const invoiceFormReducer = (
@@ -82,10 +82,8 @@ const InvoiceForm = ({ onClose }: FormProps) => {
             await createInvoice({
                 user_video_id: user_video_id!,
                 bank_id: bank_id!,
-                tier: tier,
-                // toISO is a luxon method
-                // @ts-ignore
-                paid_at: paid_at?.toISO() as string,
+                tier,
+                paid_at: paid_at as string,
             })
             onClose()
             return true
@@ -163,8 +161,11 @@ const InvoiceForm = ({ onClose }: FormProps) => {
                             <DatePicker
                                 label={'Date paid'}
                                 value={formState.paid_at}
-                                onChange={(newValue) => {
-                                    formDispatch({ type: 'paidAt', payload: newValue })
+                                onChange={(newValue: string | null) => {
+                                    formDispatch({
+                                        type: 'paidAt',
+                                        payload: newValue ? new Date(newValue).toISOString() : null,
+                                    })
                                 }}
                                 renderInput={(params) => <TextField {...params} />}
                             />
