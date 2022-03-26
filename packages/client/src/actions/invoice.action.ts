@@ -74,15 +74,15 @@ export const removeInvoices = async (id: NumberOrString[]) => {
         throw new Error(res.message)
     }
 
-    if (res.data.affectedRows === 0) {
+    if (res.data.rowCount === 0) {
         setSnackbar({
             message: `Invoice already deleted`,
             type: 'error',
         })
     } else {
         setSnackbar({
-            message: `Deleted ${res.data.affectedRows} ${
-                res.data.affectedRows === 1 ? 'invoice' : 'invoices'
+            message: `Deleted ${res.data.rowCount} ${
+                res.data.rowCount === 1 ? 'invoice' : 'invoices'
             }`,
             type: 'success',
         })
