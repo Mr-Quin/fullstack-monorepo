@@ -46,7 +46,7 @@ create table if not exists Invoices
     video_title   varchar(255)                  not null,
     user_video_id int check (user_video_id > 0) references User_Video (user_video_id) on delete set null,
     bank_id       int check (bank_id > 0)       references Banks (bank_id) on delete set null,
-    tier          int check (tier > 0)          not null default 0,
+    tier          int check (tier >= 0)          not null default 0,
     paid_at       timestamp(0)                           default null,
     created_at    timestamp(0)                           default current_timestamp,
     unique (user_video_id)
