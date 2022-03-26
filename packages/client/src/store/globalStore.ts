@@ -4,8 +4,6 @@ import { InvoiceEntity } from '../api/invoice.service'
 import { UserEntity } from '../api/user.service'
 import { VideoEntity } from '../api/video.service'
 
-export const API_KEY = '48ebbecf3c8c436791985994d9ba7c73'
-
 type Connection = {
     isConnected: boolean
     numConnected: number
