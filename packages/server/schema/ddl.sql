@@ -2,7 +2,7 @@ create table if not exists Users
 (
     user_id    serial primary key,
     username   varchar(255) not null unique,
-    created_at timestamp(0) default current_timestamp
+    created_at timestamp(0) with time zone default current_timestamp
 );
 
 create table if not exists Videos
@@ -12,7 +12,7 @@ create table if not exists Videos
     description text,
     duration    int check (duration > 0)      not null,
     view_count  bigint check (view_count > 0) not null default 0,
-    created_at  timestamp(0)                           default current_timestamp
+    created_at  timestamp(0) with time zone            default current_timestamp
 );
 
 create table if not exists Banks
@@ -24,7 +24,7 @@ create table if not exists Banks
     account_number varchar(255)                                          not null,
     routing_number varchar(255)                                          not null,
     type           varchar(255) check (type in ('checking', 'savings') ) not null,
-    created_at     timestamp(0) default current_timestamp
+    created_at     timestamp(0) with time zone default current_timestamp
 );
 
 create index if not exists idx_Banks_user_id on Banks (user_id);
@@ -46,8 +46,8 @@ create table if not exists Invoices
     video_title   varchar(255)                  not null,
     user_video_id int check (user_video_id > 0) references User_Video (user_video_id) on delete set null,
     bank_id       int check (bank_id > 0)       references Banks (bank_id) on delete set null,
-    tier          int check (tier >= 0)          not null default 0,
-    paid_at       timestamp(0)                           default null,
-    created_at    timestamp(0)                           default current_timestamp,
+    tier          int check (tier >= 0)         not null default 0,
+    paid_at       timestamp(0) with time zone            default null,
+    created_at    timestamp(0) with time zone            default current_timestamp,
     unique (user_video_id)
 );
