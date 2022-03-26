@@ -13,6 +13,9 @@ export class DbService {
             password: configService.get('APP_DB_PASSWORD'),
             database: configService.get('APP_DB_DATABASE'),
             port: +configService.get('APP_DB_PORT'),
+            ssl: {
+                rejectUnauthorized: false,
+            },
         })
     }
 
