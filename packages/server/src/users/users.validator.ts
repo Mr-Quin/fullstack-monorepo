@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
     registerDecorator,
     ValidationArguments,
@@ -6,12 +6,12 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface,
 } from 'class-validator'
-import { MySql, MYSQL } from '../repository/repository.provider'
+import { UsersService } from './users.service'
 
 @Injectable()
 @ValidatorConstraint({ name: 'UserShouldExistRule', async: true })
 export class UserShouldExistRule implements ValidatorConstraintInterface {
-    constructor(@Inject(MYSQL) private readonly mysql: MySql) {}
+    constructor(private readonly usersService: UsersService) {}
 
     async validate(value: any, args: ValidationArguments) {
         if (value === undefined) {
@@ -24,20 +24,7 @@ export class UserShouldExistRule implements ValidatorConstraintInterface {
             return true
         }
 
-        const result = await this.mysql.query(
-            `
-                SELECT COUNT(*) AS count
-                FROM Users
-                WHERE user_id in (?)`,
-            [value]
-        )
-        const countObj = result[0][0]
-
-        if (!countObj || Object.values(countObj).at(0) < value.length) {
-            return false
-        }
-
-        return true
+        return this.usersService.exists(value)
     }
 
     defaultMessage(args: ValidationArguments) {
