@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { mapSeries } from 'async'
-import { MySql, MYSQL } from '../repository/repository.provider'
+import { DbService } from '../repository/repository.provider'
 import { CreateVideoDto } from './dto/create-video.dto'
 import { FilterVideoDto } from './dto/filter-video.dto'
 import { UpdateVideoDto } from './dto/update-video.dto'
@@ -8,69 +8,87 @@ import { VideoEntity } from './entities/video.entity'
 
 @Injectable()
 export class VideosService {
-    constructor(@Inject(MYSQL) private readonly mysql: MySql) {}
+    constructor(private readonly dbService: DbService) {}
 
     async create(createVideoDto: CreateVideoDto) {
         const { user_ids, ...videoData } = createVideoDto
 
+        const [keyString, valString] = this.dbService.toInsertString(videoData)
         // insert the video
-        const insertedVideo = await this.mysql.query(
+        const { rows } = await this.dbService.pool.query(
             `
-                INSERT INTO Videos
-                SET ?
+                INSERT INTO Videos (${keyString})
+                VALUES (${valString})
+                RETURNING video_id as "insertId"
             `,
-            videoData
+            Object.values(videoData)
         )
 
-        const lastInsertedId = insertedVideo[0].insertId
+        const insertId = rows[0].insertId
 
-        const jointData = user_ids.map((user_id) => [user_id, lastInsertedId])
+        const jointData = user_ids.map((user_id) => [user_id, insertId])
+
+        const valueString = jointData
+            .map((data, i) => {
+                return `($${(i + 1) * 2 - 1}, $${(i + 1) * 2})`
+            })
+            .join(', ')
 
         // insert the m:m relationship
-        await this.mysql.query(
+        await this.dbService.pool.query(
             `
-                INSERT INTO User_Video (user_id, video_id)
-                VALUES ?
+                INSERT INTO user_video (user_id, video_id)
+                VALUES ${valueString}
             `,
-            [jointData]
+            jointData.flat()
         )
 
-        return insertedVideo[0]
+        return rows[0]
     }
 
     async findAll(filterVideoDto: FilterVideoDto): Promise<VideoEntity[]> {
-        const whereClause = Object.keys(filterVideoDto).length > 0 ? `WHERE ?` : ``
-
         // Fix ambiguous column name
         if (filterVideoDto.user_id) {
-            filterVideoDto['Users.user_id'] = filterVideoDto.user_id
+            filterVideoDto['users.user_id'] = filterVideoDto.user_id
             delete filterVideoDto.user_id
         }
 
-        const result = await this.mysql.query(
+        const whereClause =
+            Object.keys(filterVideoDto).length > 0
+                ? this.dbService.toWhereString(filterVideoDto)
+                : `true`
+
+        const { rows } = await this.dbService.pool.query(
             `
                 SELECT Videos.video_id,
                        title,
                        description,
                        duration,
                        view_count,
-                       JSON_ARRAYAGG(JSON_OBJECT('uid', Users.user_id, 'uvid', user_video_id, 'username',
-                                                 IFNULL(username, 'removed'))) AS users,
+                       json_agg(
+                               json_build_object('uid', Users.user_id, 'uvid', user_video_id, 'username',
+                                                 CASE
+                                                     WHEN username IS NULL
+                                                         THEN 'removed'
+                                                     ELSE username
+                                                     END
+                                   )) AS users,
                        Videos.created_at
                 FROM Videos
                          LEFT JOIN User_Video ON Videos.video_id = User_Video.video_id
                          LEFT JOIN Users ON Users.user_id = User_Video.user_id
-                    ${whereClause}
+                WHERE ${whereClause}
                 GROUP BY Videos.video_id
+                ORDER BY Videos.video_id
             `,
-            [filterVideoDto]
+            Object.values(filterVideoDto)
         )
 
-        return result[0]
+        return rows
     }
 
     async findOne(id: number): Promise<VideoEntity> {
-        const result = await this.mysql.execute(
+        const { rows } = await this.dbService.pool.query(
             `
                 SELECT Videos.video_id,
                        title,
@@ -79,39 +97,25 @@ export class VideosService {
                        view_count,
                        created_at
                 FROM Videos
-                WHERE Videos.video_id = ?
+                WHERE Videos.video_id = $1
             `,
             [id]
         )
 
-        return result[0]
-    }
-
-    async findUids(id: number): Promise<number[]> {
-        const result = await this.mysql.execute(
-            `
-                SELECT JSON_ARRAYAGG(user_id) as user_ids
-                FROM User_Video
-                WHERE video_id = ?
-                GROUP BY video_id;
-            `,
-            [id]
-        )
-
-        return result[0][0].user_ids
+        return rows[0]
     }
 
     async update(id: number, updateVideoDto: UpdateVideoDto) {
         const { user_ids, ...videoData } = updateVideoDto
 
         // update the video
-        const result = await this.mysql.query(
+        const result = await this.dbService.pool.query(
             `
                 UPDATE Videos
-                SET ?
-                WHERE video_id = ?
+                SET ${this.dbService.toSetString(videoData, 2)}
+                WHERE video_id = $1
             `,
-            [videoData, id]
+            [id, ...Object.values(videoData)]
         )
 
         // update the m:m relationship
@@ -129,53 +133,59 @@ export class VideosService {
                 .map((user_id) => [user_id, id])
 
             // remove old relationship
-            await mapSeries(oldRel, async (joint) =>
-                this.mysql.query(
+            await mapSeries(oldRel, async (joint) => {
+                const operator = joint[0] === null ? 'IS' : '='
+                return this.dbService.pool.query(
                     `
                         DELETE
                         FROM User_Video
-                        WHERE user_id ${joint[0] === null ? 'IS' : '='} ?
-                          AND video_id = ?
+                        WHERE user_id ${operator} $1
+                          AND video_id = $2
+                    `,
+                    joint
+                )
+            })
+
+            // insert new relationship
+            await mapSeries(newRel, async (joint) =>
+                this.dbService.pool.query(
+                    `
+                        INSERT INTO User_Video (user_id, video_id)
+                        VALUES (${this.dbService.toValString(joint)})
                     `,
                     joint
                 )
             )
-
-            // insert new relationship
-            await mapSeries(newRel, async (joint) =>
-                this.mysql.query(
-                    `
-                        INSERT INTO User_Video (user_id, video_id)
-                        VALUES (?)
-                    `,
-                    [joint]
-                )
-            )
         }
 
-        return result[0]
+        return this.dbService.rowCount(result)
     }
 
     async removeMany(ids: number[]) {
-        const result = await this.mysql.query(
+        const result = await this.dbService.pool.query(
             `
                 DELETE
                 FROM Videos
-                WHERE video_id IN (?);
+                WHERE video_id IN (${this.dbService.toValString(ids)});
             `,
-            [ids]
+            ids
         )
 
-        // also delete the m:m relationship, but ignore the result
-        await this.mysql.query(
+        // m:m relationship is deleted with cascade
+        return this.dbService.rowCount(result)
+    }
+
+    private async findUids(id: number): Promise<number[]> {
+        const { rows } = await this.dbService.pool.query(
             `
-                DELETE
+                SELECT json_agg(user_id) as user_ids
                 FROM User_Video
-                WHERE video_id IN (?);
+                WHERE video_id = $1
+                GROUP BY video_id;
             `,
-            [ids]
+            [id]
         )
 
-        return result[0]
+        return rows[0].user_ids
     }
 }
