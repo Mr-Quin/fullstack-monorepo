@@ -1,4 +1,5 @@
 # Pass some key in from the command line
+# this key is exposed in the frontend and is not meant to be secret
 ARG APP_KEY=48ebbecf3c8c436791985994d9ba7c73
 # ================================ base ================================
 FROM node:16-alpine AS build
