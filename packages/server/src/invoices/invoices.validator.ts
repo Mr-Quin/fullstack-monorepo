@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
     registerDecorator,
     ValidationArguments,
@@ -6,33 +6,33 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface,
 } from 'class-validator'
-import { MySql, MYSQL } from '../repository/repository.provider'
+import { DbService } from '../repository/repository.provider'
 
 @Injectable()
 @ValidatorConstraint({ name: 'BankIdShouldBelongToUser', async: true })
 export class BankIdShouldBelongToUserRule implements ValidatorConstraintInterface {
-    constructor(@Inject(MYSQL) private readonly mysql: MySql) {}
+    constructor(private readonly dbService: DbService) {}
 
     async validate(value: any, args: ValidationArguments) {
         // @ts-ignore
-        if (!value || args.object?.user_video_id === undefined) {
+        const uvid = args.object?.user_video_id
+        if (!value || uvid === undefined) {
             return true
         }
 
-        const result = await this.mysql.query(
+        const { rows } = await this.dbService.pool.query(
             `
                 SELECT *
                 FROM User_Video
                          JOIN Banks on Banks.user_id = User_Video.user_id
-                WHERE bank_id = ?
-                  AND user_video_id = ?;
+                WHERE bank_id = $1
+                  AND user_video_id = $2
             `,
-            // @ts-ignore
-            [value, args.object?.user_video_id]
+            [value, uvid]
         )
 
         // If there's no result, the bank does not belong to user, return false
-        return result[0].length > 0
+        return rows.length > 0
     }
 
     defaultMessage(args: ValidationArguments) {

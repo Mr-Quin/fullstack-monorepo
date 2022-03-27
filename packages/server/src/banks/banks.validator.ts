@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import {
     registerDecorator,
     ValidationArguments,
@@ -6,32 +6,32 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface,
 } from 'class-validator'
-import { MySql, MYSQL } from '../repository/repository.provider'
+import { DbService } from '../repository/repository.provider'
 
 @Injectable()
 @ValidatorConstraint({ name: 'IsNickNameUniqueForUser', async: true })
 export class IsNicknameUniqueForUserRule implements ValidatorConstraintInterface {
-    constructor(@Inject(MYSQL) private readonly mysql: MySql) {}
+    constructor(private readonly dbService: DbService) {}
 
     async validate(value: any, args: ValidationArguments) {
         // @ts-ignore
-        if (!value || args.object?.user_id === undefined) {
+        const uid = args.object?.user_id
+        if (!value || uid === undefined) {
             return true
         }
 
-        const result = await this.mysql.query(
+        const { rows } = await this.dbService.pool.query(
             `
                 SELECT *
                 FROM Banks
-                WHERE nickname = ?
-                  AND user_id = ?
+                WHERE nickname = $1
+                  AND user_id = $2
             `,
-            // @ts-ignore
-            [value, args.object?.user_id]
+            [value, uid]
         )
 
         // if we have a result, then the nickname is not unique, so we return false
-        return result[0].length <= 0
+        return rows.length <= 0
     }
 
     defaultMessage(args: ValidationArguments) {

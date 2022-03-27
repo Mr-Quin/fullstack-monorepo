@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core'
 import { WsAdapter } from '@nestjs/platform-ws'
 import { useContainer } from 'class-validator'
 import { AppModule } from './app.module'
+import { ConfigService } from '@nestjs/config'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { logger: ['log', 'verbose'] })
@@ -20,7 +21,8 @@ async function bootstrap() {
     )
         .setGlobalPrefix('api')
         .useWebSocketAdapter(new WsAdapter(app))
-    await app.listen(3000)
+    const configService: ConfigService = app.get(ConfigService)
+    await app.listen(configService.get('PORT', 3000))
 }
 
 bootstrap()

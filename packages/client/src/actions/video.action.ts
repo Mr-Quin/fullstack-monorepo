@@ -76,16 +76,14 @@ export const removeVideos = async (id: NumberOrString[]) => {
         throw new Error(res.message)
     }
 
-    if (res.data.affectedRows === 0) {
+    if (res.data.rowCount === 0) {
         setSnackbar({
             message: `Video already deleted`,
             type: 'error',
         })
     } else {
         setSnackbar({
-            message: `Deleted ${res.data.affectedRows} ${
-                res.data.affectedRows === 1 ? 'video' : 'videos'
-            }`,
+            message: `Deleted ${res.data.rowCount} ${res.data.rowCount === 1 ? 'video' : 'videos'}`,
             type: 'success',
         })
     }

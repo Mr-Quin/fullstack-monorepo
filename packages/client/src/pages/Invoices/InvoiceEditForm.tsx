@@ -15,11 +15,6 @@ const initState: UpdateInvoiceDto = {
     paid_at: null,
 }
 
-// replace Z with -07:00, so it gets accepted by sql
-const formatDate = (date: string) => {
-    return date.replace('Z', '-07:00')
-}
-
 const getInitState = (value?: InvoiceEntity) => {
     if (value !== undefined) {
         const { user_video_id, bank_id, tier, paid_at } = value
@@ -27,7 +22,7 @@ const getInitState = (value?: InvoiceEntity) => {
             user_video_id,
             bank_id,
             tier,
-            paid_at: paid_at !== null ? formatDate(paid_at) : null,
+            paid_at,
         }
     }
     return initState
@@ -122,10 +117,12 @@ const InvoiceEditForm = ({ onClose, initValue, id }: EditFormProps<InvoiceEntity
                     <DatePicker
                         label={'Date paid'}
                         value={formState.paid_at ?? null}
-                        onChange={(newValue) => {
+                        onChange={(newValue: string | null) => {
                             if (newValue !== null) {
-                                // @ts-ignore
-                                setFormState({ ...formState, paid_at: newValue.toISO() })
+                                setFormState({
+                                    ...formState,
+                                    paid_at: new Date(newValue).toISOString(),
+                                })
                             } else {
                                 setFormState({ ...formState, paid_at: null })
                             }

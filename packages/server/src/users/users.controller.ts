@@ -24,6 +24,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { UserDetailEntity } from './entities/user-detail.entity'
 import { UserEntity } from './entities/user.entity'
 import { UsersService } from './users.service'
+import { UserExistsPipe } from './users.pipe'
 
 @Controller('users')
 @UsePipes(new ParseIdPipe('id'))
@@ -40,7 +41,9 @@ export class UsersController {
 
     @Get()
     async findAll(@Query() filter: FilterUserDto): Promise<UserEntity[]> {
-        const data = await this.usersService.findAll(filter)
+        const data = filter.qualified
+            ? await this.usersService.findQualifiedUsers()
+            : await this.usersService.findAll()
         return data.map((user) => new UserEntity(user))
     }
 
@@ -53,7 +56,7 @@ export class UsersController {
 
     @Patch(':id')
     async update(
-        @Param('id') id: number,
+        @Param('id', UserExistsPipe) id: number,
         @Body() updateUserDto: UpdateUserDto
     ): Promise<SqlResultDto> {
         const res = await this.usersService.update(id, updateUserDto)

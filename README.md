@@ -2,7 +2,7 @@
 
 ## Requirements
 
-This project requires Node 16 or above, npm, and a SQL database. The project was developed using MySQL 8.0.
+This project requires Node 16 or above, npm, and PostgresSQL database. The project was developed using PostgresSql 14.2.
 
 ## Setting up
 
@@ -16,52 +16,61 @@ See their respective documentation for more information.
 
 All following commands are run from the root of the project.
 
-- ### Install dependencies:
+-   ### Install dependencies:
 
-  ```
-  npm install
-  ```
-- ### Configure environment variables:
-  The backend server requires some environment variables to be set. See the
-  sample [`.env` file](./packages/server/.env.sample) for more information.
+    ```
+    npm install
+    ```
 
-  Environment variables can be provided in a `.env`
-  file at the root of the server package
+-   ### Configure environment variables:
 
-- ### Configure database:
-  The app expects the database to have some tables created. Load the
-  [`ddl.sql` file](./packages/server/schema/ddl.sql) into your database.
+    The backend server requires some environment variables to be set. See the
+    sample [`.env` file](./packages/server/.env.sample) for more information.
 
-- ### Start the backend server:
+    Environment variables can be provided in a `.env`
+    file at the root of the server package
 
-  ```
-  npm run start:server
-  ```
+-   ### Configure database:
 
-- ### Start the frontend server:
-  In another terminal:
-  ```
-  npm run start:client
-  ```
+    The app expects the database to have some tables created. Load the
+    [`ddl.sql` file](./packages/server/schema/ddl.sql) into your database.
+
+-   ### Start the backend server:
+
+    ```
+    npm run start:server
+    ```
+
+-   ### Start the frontend server:
+    In another terminal:
+    ```
+    npm run start:client
+    ```
 
 ## Deployment
 
 [Docker](https://www.docker.com/) is the recommended deployment method.
 
-- ### Build the Docker image:
-  A [Dockerfile](./Dockerfile) is provided at the root of the project.
+-   ### Build the Docker image:
 
-  Build the image with:
-  ```
-  docker build -t myapp .
-  ```
-  Change the tag as needed.
+    A [Dockerfile](./Dockerfile) is provided at the root of the project.
 
-- ### Run the Docker image:
-  Since a database is needed, an example [docker-compose.yml](./deploy/docker-compose.yml) is provided.
+    Build the image with:
 
-  Replace the environment variables, then start the containers with:
-  ```
-  docker-compose up -d
-  ```
-  You will need to manually load the schema into the database for it to start working.
+    ```
+    docker build -t myapp .
+    ```
+
+    Change the tag as needed.
+
+-   ### Run the Docker image:
+
+    Since a database is needed, an example [docker-compose.yml](./deploy/docker-compose.yml) is provided.
+
+    Replace the environment variables, then start the containers with:
+
+    ```
+    docker-compose up -d
+    ```
+
+    You will need to manually load the schema into the database for it to start working.

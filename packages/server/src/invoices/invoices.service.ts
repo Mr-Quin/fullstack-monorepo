@@ -1,33 +1,35 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { SqlResultDto } from '../common/dto/sql-result.dto'
-import { MySql, MYSQL } from '../repository/repository.provider'
+import { DbService } from '../repository/repository.provider'
 import { CreateInvoiceDto } from './dto/create-invoice.dto'
 import { UpdateInvoiceDto } from './dto/update-invoice.dto'
 import { InvoiceEntity } from './entities/invoice.entity'
 
 @Injectable()
 export class InvoicesService {
-    constructor(@Inject(MYSQL) private readonly mysql: MySql) {}
+    constructor(private readonly dbService: DbService) {}
 
     async create(createInvoiceDto: CreateInvoiceDto): Promise<SqlResultDto> {
         const { user_video_id, bank_id, tier, paid_at } = createInvoiceDto
 
-        const result = await this.mysql.execute(
+        const { rows } = await this.dbService.pool.query(
             `
                 INSERT INTO Invoices (user_video_id, username, video_title, bank_id, tier, paid_at)
-                SELECT user_video_id, username, title as video_title, ?, ?, ?
-                FROM User_Video
-                         JOIN Users ON Users.user_id = User_Video.user_id
-                         JOIN Videos ON Videos.video_id = User_Video.video_id
-                WHERE User_Video.user_video_id = ?`,
+                    SELECT user_video_id, username, title as video_title, $1, $2, $3
+                    FROM User_Video
+                             JOIN Users ON Users.user_id = User_Video.user_id
+                             JOIN Videos ON Videos.video_id = User_Video.video_id
+                    WHERE User_Video.user_video_id = $4
+                RETURNING invoice_id as "insertId"
+                `,
             [bank_id, tier, paid_at, user_video_id]
         )
 
-        return result[0]
+        return rows[0]
     }
 
     async findAll(): Promise<InvoiceEntity[]> {
-        const result = await this.mysql.execute(`
+        const { rows } = await this.dbService.pool.query(`
             SELECT invoice_id,
                    I.user_video_id,
                    I.username,
@@ -43,11 +45,11 @@ export class InvoicesService {
                      LEFT JOIN Users U ON U.user_id = UV.user_id
         `)
 
-        return result[0]
+        return rows
     }
 
     async findOne(id: number): Promise<InvoiceEntity> {
-        const result = await this.mysql.execute(
+        const { rows } = await this.dbService.pool.query(
             `
                 SELECT invoice_id,
                        user_video_id,
@@ -58,36 +60,39 @@ export class InvoicesService {
                        paid_at,
                        created_at
                 FROM Invoices
-                WHERE invoice_id = ?`,
+                WHERE invoice_id = $1`,
             [id]
         )
 
-        return result[0][0] as InvoiceEntity
+        return rows[0] as InvoiceEntity
     }
 
-    async update(id: number, updateInvoiceDto: UpdateInvoiceDto): Promise<SqlResultDto> {
+    async update(id: number, updateInvoiceDto: UpdateInvoiceDto) {
         const { user_video_id, ...rest } = updateInvoiceDto
 
-        const result = await this.mysql.query(
+        // TODO: check if bank_id belongs to user
+        const result = await this.dbService.pool.query(
             `
-                UPDATE Invoices
-                SET ?
-                WHERE invoice_id = ?`,
-            [rest, id]
+                UPDATE invoices
+                SET ${this.dbService.toSetString(rest, 2)}
+                WHERE invoice_id = $1
+            `,
+            [id, ...Object.values(rest)]
         )
 
-        return result[0]
+        return this.dbService.rowCount(result)
     }
 
-    async removeMany(ids: number[]): Promise<SqlResultDto> {
-        const res = await this.mysql.query(
+    async removeMany(ids: number[]) {
+        const result = await this.dbService.pool.query(
             `
                 DELETE
-                FROM Invoices
-                WHERE invoice_id IN (?)`,
-            [ids]
+                FROM invoices
+                WHERE invoice_id IN (${this.dbService.toValString(ids)});
+            `,
+            ids
         )
 
-        return res[0]
+        return this.dbService.rowCount(result)
     }
 }

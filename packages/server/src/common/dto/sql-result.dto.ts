@@ -8,6 +8,9 @@ export class SqlResultDto {
     affectedRows: number
 
     @Expose()
+    rowCount: number
+
+    @Expose()
     insertId: number
 
     @Exclude()

@@ -42,7 +42,7 @@ export class BanksController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: number) {
+    async findOne(@Param('id') id: number) {
         throw new NotImplementedException()
         // return this.banksService.findOne(id)
     }

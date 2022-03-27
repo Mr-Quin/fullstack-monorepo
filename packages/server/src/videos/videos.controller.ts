@@ -52,8 +52,12 @@ export class VideosController {
 
     @Patch(':id')
     @UsePipes(new RemoveUndefinedPipe('body'), new NotEmptyPipe('body'))
-    update(@Param('id') id: number, @Body() updateVideoDto: UpdateVideoDto): Promise<SqlResultDto> {
-        return this.videosService.update(id, updateVideoDto)
+    async update(
+        @Param('id') id: number,
+        @Body() updateVideoDto: UpdateVideoDto
+    ): Promise<SqlResultDto> {
+        const res = await this.videosService.update(id, updateVideoDto)
+        return new SqlResultDto(res)
     }
 
     @Delete()

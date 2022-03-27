@@ -101,16 +101,14 @@ export const removeUsers = async (ids: GridRowId[]) => {
         throw new Error(res.message)
     }
 
-    if (res.data.affectedRows === 0) {
+    if (res.data.rowCount === 0) {
         setSnackbar({
             message: `User already deleted`,
             type: 'error',
         })
     } else {
         setSnackbar({
-            message: `Deleted ${res.data.affectedRows} ${
-                res.data.affectedRows === 1 ? 'user' : 'users'
-            }`,
+            message: `Deleted ${res.data.rowCount} ${res.data.rowCount === 1 ? 'user' : 'users'}`,
             type: 'success',
         })
     }

@@ -1,6 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { SqlResultDto } from '../common/dto/sql-result.dto'
-import { MySql, MYSQL } from '../repository/repository.provider'
+import { Injectable } from '@nestjs/common'
+import { DbService } from '../repository/repository.provider'
 import { CreateBankDto } from './dto/create-bank.dto'
 import { FilterBankDto } from './dto/filter-bank.dto'
 import { UpdateBankDto } from './dto/update-bank.dto'
@@ -8,24 +7,30 @@ import { BankEntity } from './entities/bank.entity'
 
 @Injectable()
 export class BanksService {
-    constructor(@Inject(MYSQL) private readonly mysql: MySql) {}
+    constructor(private readonly dbService: DbService) {}
 
     async create(createBankDto: CreateBankDto) {
-        const result = await this.mysql.query(
+        const [keyString, valString] = this.dbService.toInsertString(createBankDto)
+
+        const { rows } = await this.dbService.pool.query(
             `
-                INSERT INTO Banks
-                SET ?
+                INSERT INTO banks (${keyString})
+                VALUES (${valString})
+                RETURNING bank_id as "insertId"
             `,
-            createBankDto
+            Object.values(createBankDto)
         )
 
-        return result[0]
+        return rows[0]
     }
 
     async findAll(filterBankDto: FilterBankDto): Promise<BankEntity[]> {
-        const whereClause = Object.keys(filterBankDto).length > 0 ? `WHERE ?` : ``
+        const whereClause =
+            Object.keys(filterBankDto).length > 0
+                ? this.dbService.toWhereString(filterBankDto)
+                : `true`
 
-        const result = await this.mysql.query(
+        const { rows } = await this.dbService.pool.query(
             `
                 SELECT bank_id,
                        user_id,
@@ -35,39 +40,42 @@ export class BanksService {
                        routing_number,
                        type,
                        created_at
-                FROM Banks ${whereClause}`,
-            [filterBankDto]
+                FROM Banks
+                WHERE ${whereClause}
+                `,
+            Object.values(filterBankDto)
         )
-        return result[0]
+
+        return rows
     }
 
     findOne(id: number) {
-        return `This action returns a #${id} bank`
+        return `not implemented`
     }
 
-    async update(id: number, updateBankDto: UpdateBankDto): Promise<SqlResultDto> {
-        const result = await this.mysql.query(
+    async update(id: number, updateBankDto: UpdateBankDto) {
+        const result = await this.dbService.pool.query(
             `
-                UPDATE Banks
-                SET ?
-                WHERE bank_id = ?
+                UPDATE banks
+                SET ${this.dbService.toSetString(updateBankDto, 2)}
+                WHERE bank_id = $1
             `,
-            [updateBankDto, id]
+            [id, ...Object.values(updateBankDto)]
         )
 
-        return result[0]
+        return this.dbService.rowCount(result)
     }
 
-    async removeMany(ids: number[]): Promise<SqlResultDto> {
-        const result = await this.mysql.query(
+    async removeMany(ids: number[]) {
+        const result = await this.dbService.pool.query(
             `
                 DELETE
-                FROM Banks
-                WHERE bank_id IN (?)
+                FROM banks
+                WHERE bank_id IN (${this.dbService.toValString(ids)});
             `,
-            [ids]
+            ids
         )
 
-        return result[0]
+        return this.dbService.rowCount(result)
     }
 }
