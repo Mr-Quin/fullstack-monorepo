@@ -2,20 +2,32 @@ import { Pool, QueryResult } from 'pg'
 import { ConfigService } from '@nestjs/config'
 import { Injectable } from '@nestjs/common'
 
+const parseBoolean = (value?: string | boolean): boolean => {
+    if (typeof value === 'boolean') return value
+    if (value === undefined) return false
+    if (value === 'true') return true
+    if (value === 'false') return false
+    throw new Error(`Invalid boolean value: ${value}`)
+}
+
 @Injectable()
 export class DbService {
     pool: Pool
 
     constructor(private readonly configService: ConfigService) {
+        const ssl =
+            parseBoolean(this.configService.get('APP_DB_SSL', true)) === true
+                ? {
+                      rejectUnauthorized: false,
+                  }
+                : false
         this.pool = new Pool({
             host: configService.get('APP_DB_HOST'),
             user: configService.get('APP_DB_USER'),
             password: configService.get('APP_DB_PASSWORD'),
             database: configService.get('APP_DB_DATABASE'),
             port: +configService.get('APP_DB_PORT'),
-            ssl: {
-                rejectUnauthorized: false,
-            },
+            ssl,
         })
     }
 

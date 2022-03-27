@@ -5,9 +5,15 @@ services:
         hostname: postgres
         container_name: postgres
         image: postgres:14.2
-        # need to manually load schema
+        # load schema
+        volumes:
+            - ./postgres:/docker-entrypoint-initdb.d
+            - postgres:/var/lib/postgresql/data
+        networks:
+            - app
         environment:
             POSTGRES_PASSWORD: password
+
         restart: unless-stopped
 
     app:
@@ -23,11 +29,23 @@ services:
             APP_DB_USER: postgres
             APP_DB_PASSWORD: password
             APP_DB_DATABASE: postgres
-            APP_PORT: 3000
+            APP_PORT: 3000 # optional
+            APP_DB_SSL: 'false' # optional
         ports:
             - '4000:3000'
         depends_on:
             - postgres
+
+volumes:
+    # postgres data
+    postgres:
+        name: postgres
+        driver: local
+        driver_opts:
+            # 1gb limit
+            o: 'size=1g'
+            device: tmpfs
+            type: tmpfs
 
 networks:
     app:

@@ -2,7 +2,7 @@
 
 ## Requirements
 
-This project requires Node 16 or above, npm, and PostgresSQL database. The project was developed using PostgresSql 14.2.
+This project requires Node 16 or above, npm, and Postgres database. The project was developed using PostgresSql 14.2.
 
 ## Setting up
 
@@ -51,26 +51,26 @@ All following commands are run from the root of the project.
 
 [Docker](https://www.docker.com/) is the recommended deployment method.
 
--   ### Build the Docker image:
+- ### Build the Docker image:
 
     A [Dockerfile](./Dockerfile) is provided at the root of the project.
 
     Build the image with:
 
     ```
-    docker build -t myapp .
+    docker build . -t app
     ```
 
     Change the tag as needed.
 
--   ### Run the Docker image:
+- ### Run the Docker image:
 
-    Since a database is needed, an example [docker-compose.yml](./deploy/docker-compose.yml) is provided.
+    A working example [docker-compose.yml](./deploy/docker-compose.yml) is provided. 
 
-    Replace the environment variables, then start the containers with:
+    Provide the schema files in the Postgres volume, and change the environment variables as needed.
+
+    Start the deployment with:
 
     ```
     docker-compose up -d
     ```
-
-    You will need to manually load the schema into the database for it to start working.
