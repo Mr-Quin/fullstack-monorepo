@@ -2,7 +2,7 @@
 
 ## Requirements
 
-This project requires Node 16 or above, npm, and Postgres database. The project was developed using PostgresSql 14.2.
+This project requires Node 16 or above, npm, and Postgres database. The project was developed using PostgreSql 14.2.
 
 ## Setting up
 
